@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>Deposit</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body>
+    {% block javascript %}
+
+
+    {% endblock javascript %}
+    <p class="alert alert-success">Welcome: {{login_user_name}}</p>
+    <p class="alert alert-danger">Current Balance is: {{current_cash}}</p>
+
+
+
+    <select name="stocks" id="stocks">
+        <option value="Choose">Choose</option>
+        {% for stock in stocks %}
+
+        <option value={{stock.stock_name}}>{{stock.stock_name}}</option>
+        {% endfor %}
+
+
+
+    </select>
+    <table class="table">
+        <tr>
+            <th scope="col"> Stock Ticker</th>
+            <th scope="col">Stock Price</th>
+            <th scope="col">Number of shares</th>
+            <th scope="col">Market Capitization</th>
+            <th scope="col">Begin Val</th>
+            <th scope="col">High Val</th>
+            <th scope="col">Low Val</th>
+        </tr>
+        <tr>
+            <td id="stock_ticker"></td>
+            <td id="stock_price"></td>
+            <td id="number_of_shares"></td>
+            <td id="market_capitization"></td>
+            <td id="begin_val"></td>
+            <td id="low_val"></td>
+            <td id="high_val"></td>
+        </tr>
+    </table>
+    <div>
+        <h3>My stocks</h3>
+        <table class="table">
+            <tr>
+                <th scope="col">Stock_name</th>
+                <th scope="col">Number of volumes</th>
+            </tr>
+            {% for user_stock in user_stocks %}
+            <tr>
+                <td>{{user_stock.stock_name}}</td>
+                <td>{{user_stock.number_of_volumes}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    <div>{% if market_open > 0 %}
+        <div style="display: inline-flex;">
+            <form action="buystock">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-success" value="Buy stocks">
+            </form>
+            <form action="sellstock">
+                {% csrf_token %}
+                <input type="submit" style="float:right;" class="btn btn-success" value="Sell stocks">
+            </form>
+
+        </div>
+
+    </div>
+    <br>
+
+    <div style="display: inline-flex;">
+        <form action="buystock_lo">
+            {% csrf_token %}
+            <input type="submit" class="btn btn-dark" value="Buy stocks via Limit Order">
+        </form>
+        <form action="sellstock_lo">
+            {% csrf_token %}
+            <input type="submit" class=" btn btn-dark" value="Sell stocks via Limit Order">
+        </form>
+    </div>
+    {% endif %}
+    <br>
+    <div>
+        <form action="{% url 'limitOrders' 0 %}">
+            {% csrf_token %}
+            <input type="submit" value="List my Limit Orders" class="btn btn-danger">
+        </form>
+    </div>
+    <br>
+    <br>
+    <div>
+        <form action="{% url 'txnHistory' %}">
+            {% csrf_token %}
+            <input type="submit" value="List my Transactions" class="btn btn-success">
+        </form>
+    </div>
+    <br>
+    <div>
+        <form action="{% url 'depositcash' %}">
+            {% csrf_token %}
+            <input type="submit" value="Deposit Cash" class="btn btn-light">
+        </form>
+    </div>
+    <br>
+    <form action="{% url 'logout' %}">
+        <button type="submit" style="float:right" class="btn btn-primary">Logout</button>
+
+    </form>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script>
+        stock_obj = document.getElementById("stocks")
+        stock_price_obj = document.getElementById('stock_price')
+        number_of_shares = document.getElementById('number_of_shares')
+        market_capitization = document.getElementById('market_capitization')
+        stock_ticker = document.getElementById('stock_ticker')
+        begin_val_obj = document.getElementById('begin_val')
+        high_val_obj = document.getElementById('high_val')
+        low_val_obj = document.getElementById('low_val')
+        stock_obj.addEventListener('change', e => {
+            stock_name = stock_obj.value
+            $.ajax({
+                type: 'GET',
+                url: `get_info/${stock_name}/`,
+                success: function (response) {
+                    console.log('Success')
+                    const modelsData = response.data
+                    console.log(modelsData[0])
+                    console.log(modelsData[1])
+                    stock_price_obj.innerHTML = modelsData[0]
+                    number_of_shares.innerHTML = modelsData[2]
+                    stock_ticker.innerHTML = modelsData[1]
+                    market_capitization.innerHTML = modelsData[3]
+                    begin_val_obj.innerHTML = modelsData[4]
+                    high_val_obj.innerHTML = modelsData[5]
+                    low_val_obj.innerHTML = modelsData[6]
+
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        })
+
+
+    </script>
+</body>
+
+</html>
